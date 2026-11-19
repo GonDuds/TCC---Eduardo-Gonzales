@@ -21,6 +21,9 @@ app.add_middleware(
 PASTA_ATUAL = os.path.dirname(os.path.abspath(__file__))
 CAMINHO_BANCO = os.path.join(PASTA_ATUAL, "delicia_cupcakes.db")
 CAMINHO_HTML = os.path.join(PASTA_ATUAL, "index.html")
+if not os.path.exists(CAMINHO_BANCO):
+    import criar_banco
+    import popular_banco
 
 
 def get_db():
