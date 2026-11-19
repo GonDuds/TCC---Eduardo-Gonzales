@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delícia Cupcakes — Web App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background-color: #FAF6F6; color: #3E2723; }
+    .pastel-pink { background-color: #F4D2D6; }
+    .dark-brown { background-color: #3E2723; color: #FFFFFF; }
+    .text-brown { color: #3E2723; }
+  </style>
+</head>
+<body class="pb-24">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-rose-100 px-4 py-3 max-w-4xl mx-auto flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full pastel-pink flex items-center justify-center text-lg">🧁</div>
+      <div>
+        <p class="text-xs text-stone-500">Olá,</p>
+        <p id="header-user-name" class="font-semibold text-sm">Visitante</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="header-points" class="pastel-pink text-brown text-xs font-semibold px-3 py-1.5 rounded-full">🪙 0 pts</span>
+      <button onclick="navegar('login')" id="btn-auth" class="text-xs border border-stone-300 px-3 py-1.5 rounded-full hover:bg-stone-100">Entrar</button>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 pt-4">
+
+    <!-- ==================== TELA 1: LOGIN / CADASTRO (TELA101) ==================== -->
+    <section id="view-login" class="hidden max-w-md mx-auto bg-white p-6 rounded-3xl shadow-sm border border-rose-100 mt-4">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-full pastel-pink mx-auto flex items-center justify-center text-3xl mb-2">🎂</div>
+        <h1 class="text-xl font-bold">Delícia Cupcakes</h1>
+        <p class="text-xs text-stone-500">Doçura que encanta</p>
+      </div>
+      <div class="space-y-3">
+        <input id="login-email" type="email" value="eduardo@email.com" placeholder="E-mail" class="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rose-300">
+        <input id="login-senha" type="password" value="12345678" placeholder="Senha" class="w-full border border-stone-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rose-300">
+        <button onclick="fazerLogin()" class="w-full pastel-pink text-brown font-semibold py-3 rounded-xl hover:opacity-90 transition">Entrar</button>
+        <p id="login-erro" class="text-xs text-red-600 hidden text-center"></p>
+      </div>
+      <div class="mt-4 pt-4 border-t border-stone-100 text-center text-xs text-stone-500 space-y-1">
+        <p>Acesso rápido de teste:</p>
+        <button onclick="preencherLogin('eduardo@email.com')" class="underline text-brown font-medium">Cliente (Eduardo)</button> •
+        <button onclick="preencherLogin('cozinha@deliciacupcakes.com')" class="underline text-brown font-medium">Confeiteiro (Admin)</button>
+      </div>
+    </section>
+
+    <!-- ==================== TELA 2: VITRINE INICIAL (US001) ==================== -->
+    <section id="view-inicio" class="space-y-5">
+      <input id="busca-input" oninput="filtrarVitrine()" type="text" placeholder="🔍 Buscar cupcakes..." class="w-full bg-white border border-stone-200 rounded-2xl px-4 py-3 text-sm shadow-sm focus:outline-none">
+
+      <!-- Filtros -->
+      <div class="flex gap-2 overflow-x-auto pb-1" id="filtros-container">
+        <button onclick="selecionarCategoria('Todos', this)" class="cat-btn dark-brown px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap">Todos</button>
+        <button onclick="selecionarCategoria('Tradicional', this)" class="cat-btn bg-white border border-stone-200 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap">Tradicional</button>
+        <button onclick="selecionarCategoria('Vegano', this)" class="cat-btn bg-white border border-stone-200 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap">Vegano</button>
+        <button onclick="selecionarCategoria('Sem Lactose', this)" class="cat-btn bg-white border border-stone-200 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap">Sem Lactose</button>
+        <button onclick="selecionarCategoria('Mais Vendidos', this)" class="cat-btn bg-white border border-stone-200 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap">Mais Vendidos</button>
+      </div>
+
+      <!-- Banner Monte seu Cupcake -->
+      <div onclick="navegar('monte')" class="pastel-pink rounded-2xl p-5 flex items-center justify-between cursor-pointer shadow-sm hover:opacity-95 transition">
+        <div>
+          <h2 class="font-bold text-base">Monte seu Cupcake</h2>
+          <p class="text-xs text-stone-700 mt-0.5">Crie a combinação perfeita passo a passo!</p>
+        </div>
+        <span class="text-3xl">✨</span>
+      </div>
+
+      <div>
+        <h3 class="font-bold text-base mb-3">Nossos Cupcakes</h3>
+        <div id="grid-produtos" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- ==================== TELA 3: MONTE SEU CUPCAKE (TELA201 - US002) ==================== -->
+    <section id="view-monte" class="hidden space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold">Monte seu Cupcake</h2>
+        <button onclick="resetarMontador()" class="text-xs text-stone-500 underline">Limpar</button>
+      </div>
+
+      <!-- Preview Visual -->
+      <div class="bg-white rounded-3xl p-5 border border-rose-100 text-center shadow-sm">
+        <div class="text-5xl mb-2">🧁</div>
+        <p id="preview-resumo" class="text-xs text-stone-600">Selecione a massa, recheio, cobertura e confeito</p>
+      </div>
+
+      <!-- Stepper Visual -->
+      <div class="grid grid-cols-4 gap-2 text-center text-xs">
+        <div id="step-badge-1" class="p-2 rounded-xl dark-brown font-semibold">1. Massa</div>
+        <div id="step-badge-2" class="p-2 rounded-xl bg-white border border-stone-200">2. Recheio</div>
+        <div id="step-badge-3" class="p-2 rounded-xl bg-white border border-stone-200">3. Cobertura</div>
+        <div id="step-badge-4" class="p-2 rounded-xl bg-white border border-stone-200">4. Confeito</div>
+      </div>
+
+      <!-- Alerta Térmico (RN#2 da US002) -->
+      <div id="alerta-termico" class="hidden bg-red-50 border border-red-300 text-red-700 p-3 rounded-xl text-xs font-medium">
+        ⚠️ Incompatibilidade Térmica: Coberturas quentes não podem ser combinadas com recheios de frutas frescas! Escolha outra opção.
+      </div>
+
+      <!-- Opções da Etapa -->
+      <div class="bg-white p-4 rounded-2xl border border-stone-200">
+        <h3 id="titulo-etapa" class="font-bold text-sm mb-3">Escolha a Massa</h3>
+        <div id="opcoes-ingredientes" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"></div>
+      </div>
+
+      <!-- Rodapé do Montador -->
+      <div class="bg-white p-4 rounded-2xl border border-stone-200 flex items-center justify-between">
+        <div>
+          <p class="text-xs text-stone-500">Total do Cupcake:</p>
+          <p id="preco-custom" class="text-lg font-bold">R$ 5,00</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="btn-voltar-etapa" onclick="mudarEtapa(-1)" class="hidden px-4 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold">Voltar</button>
+          <button id="btn-avancar-etapa" onclick="mudarEtapa(1)" class="px-5 py-2.5 rounded-xl pastel-pink font-semibold text-xs">Avançar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TELA 4: CARRINHO E CHECKOUT (TELA302 - US003, US005, US013) ==================== -->
+    <section id="view-carrinho" class="hidden space-y-4">
+      <h2 class="text-lg font-bold">Meu Carrinho</h2>
+      <div id="lista-carrinho" class="space-y-2.5"></div>
+
+      <!-- Cupom -->
+      <div class="bg-white p-4 rounded-2xl border border-stone-200 space-y-2">
+        <div class="flex gap-2">
+          <input id="input-cupom" type="text" placeholder="Cupom (ex: CUPCAKE10)" class="flex-1 border border-stone-200 rounded-xl px-3 py-2 text-xs uppercase">
+          <button onclick="aplicarCupom()" class="dark-brown px-4 py-2 rounded-xl text-xs font-semibold">Aplicar</button>
+        </div>
+        <p id="msg-cupom" class="text-xs hidden"></p>
+      </div>
+
+      <!-- Entrega e Agendamento -->
+      <div class="bg-white p-4 rounded-2xl border border-stone-200 space-y-3">
+        <h3 class="font-bold text-sm">Entrega e Agendamento</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btn-tipo-entrega" onclick="setTipoEntrega('ENTREGA')" class="py-2.5 rounded-xl border-2 border-stone-800 bg-rose-50 text-xs font-semibold">🛵 Motoboy (+R$ 5,00)</button>
+          <button id="btn-tipo-retirada" onclick="setTipoEntrega('RETIRADA')" class="py-2.5 rounded-xl border border-stone-200 text-xs font-semibold">🏪 Retirar na Loja</button>
+        </div>
+
+        <div id="campos-endereco" class="grid grid-cols-2 gap-2 pt-1">
+          <input id="end-cep" onblur="buscarCep()" type="text" placeholder="CEP (ex: 83005-000)" class="border border-stone-200 rounded-xl px-3 py-2 text-xs">
+          <input id="end-numero" type="text" placeholder="Número" class="border border-stone-200 rounded-xl px-3 py-2 text-xs">
+          <input id="end-rua" type="text" placeholder="Rua / Logradouro" class="col-span-2 border border-stone-200 rounded-xl px-3 py-2 text-xs">
+          <input id="end-bairro" type="text" placeholder="Bairro" class="border border-stone-200 rounded-xl px-3 py-2 text-xs">
+          <input id="end-cidade" type="text" placeholder="Cidade" class="border border-stone-200 rounded-xl px-3 py-2 text-xs">
+        </div>
+
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Data e Hora Agendada (mín. 24h p/ personalizados):</label>
+          <input id="input-agendamento" type="datetime-local" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-xs">
+        </div>
+      </div>
+
+      <!-- Totais -->
+      <div class="bg-white p-4 rounded-2xl border border-stone-200 space-y-1.5 text-xs">
+        <div class="flex justify-between"><span>Subtotal:</span><span id="resumo-subtotal">R$ 0,00</span></div>
+        <div class="flex justify-between"><span>Taxa de Entrega:</span><span id="resumo-frete">R$ 5,00</span></div>
+        <div class="flex justify-between text-emerald-700"><span>Desconto Cupom:</span><span id="resumo-desconto">- R$ 0,00</span></div>
+        <div class="flex justify-between text-base font-bold pt-2 border-t"><span>Total:</span><span id="resumo-total">R$ 0,00</span></div>
+        <p id="erro-checkout" class="text-red-600 text-xs pt-1 hidden"></p>
+        <button onclick="finalizarPedido()" class="w-full mt-3 pastel-pink text-brown font-bold py-3 rounded-xl text-sm hover:opacity-90">Finalizar Pedido e Gerar PIX</button>
+      </div>
+    </section>
+
+    <!-- ==================== TELA 5: PAGAMENTO PIX E RASTREAMENTO (TELA305 - US006, US007) ==================== -->
+    <section id="view-pix" class="hidden max-w-md mx-auto bg-white p-6 rounded-3xl border border-rose-100 text-center space-y-4">
+      <span class="pastel-pink px-3 py-1 rounded-full text-xs font-bold" id="pix-codigo-pedido">#PED-0000</span>
+      <h2 class="text-lg font-bold">Pagamento via PIX</h2>
+      <p class="text-xs text-stone-500">Expira em <span id="pix-timer" class="font-bold text-red-600">14:59</span></p>
+
+      <!-- QR Code visual simulado -->
+      <div class="w-44 h-44 mx-auto bg-stone-900 text-white rounded-2xl flex flex-col items-center justify-center p-3">
+        <div class="grid grid-cols-5 gap-1 w-28 h-28 bg-white p-2 rounded">
+          <div class="bg-black col-span-2 row-span-2"></div><div class="bg-white"></div><div class="bg-black col-span-2 row-span-2"></div>
+          <div class="bg-black"></div><div class="bg-black col-span-3"></div><div class="bg-white"></div>
+          <div class="bg-black col-span-2 row-span-2"></div><div class="bg-black"></div><div class="bg-black col-span-2"></div>
+        </div>
+        <span class="text-[10px] mt-2 text-stone-300">QR Code PIX Dinâmico</span>
+      </div>
+
+      <div class="text-left">
+        <label class="text-[11px] text-stone-500">PIX Copia e Cola:</label>
+        <input id="pix-payload" readonly class="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-[11px] font-mono">
+      </div>
+
+      <button id="btn-simular-pix" onclick="simularPagamentoPix()" class="w-full bg-emerald-600 text-white font-semibold py-3 rounded-xl text-xs hover:bg-emerald-700">
+        ✅ Simular Pagamento Aprovado (Webhook)
+      </button>
+
+      <div id="box-rastreamento" class="hidden pt-4 border-t text-left space-y-2">
+        <h3 class="font-bold text-sm text-center">Rastreamento em Tempo Real</h3>
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs text-center font-semibold">
+          Status Atual: <span id="status-pedido-atual">RECEBIDO</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TELA 6: PAINEL DO CONFEITEIRO & ESTOQUE (US009, US010) ==================== -->
+    <section id="view-admin" class="hidden space-y-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold">Painel do Confeiteiro & Estoque</h2>
+          <p class="text-xs text-stone-500">Kanban de produção e controle automático de insumos</p>
+        </div>
+        <button onclick="carregarAdmin()" class="text-xs bg-white border border-stone-200 px-3 py-1.5 rounded-xl">🔄 Atualizar</button>
+      </div>
+
+      <!-- Kanban -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="bg-white p-3 rounded-2xl border border-stone-200">
+          <h3 class="font-bold text-xs uppercase text-amber-700 mb-2">⏳ Fila de Espera (Recebido)</h3>
+          <div id="kanban-recebido" class="space-y-2"></div>
+        </div>
+        <div class="bg-white p-3 rounded-2xl border border-stone-200">
+          <h3 class="font-bold text-xs uppercase text-blue-700 mb-2">👩‍🍳 Em Preparo</h3>
+          <div id="kanban-preparo" class="space-y-2"></div>
+        </div>
+        <div class="bg-white p-3 rounded-2xl border border-stone-200">
+          <h3 class="font-bold text-xs uppercase text-emerald-700 mb-2">✅ Pronto / Entregue</h3>
+          <div id="kanban-pronto" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- Controle de Estoque (US010) -->
+      <div class="bg-white p-4 rounded-2xl border border-stone-200">
+        <h3 class="font-bold text-sm mb-3">📦 Nível de Estoque de Insumos (Baixa Automática)</h3>
+        <div id="lista-estoque" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-stone-200 z-40">
+    <div class="max-w-4xl mx-auto grid grid-cols-4 py-2 text-center text-xs">
+      <button onclick="navegar('inicio')" class="nav-btn flex flex-col items-center gap-0.5 font-semibold text-brown">
+        <span class="text-lg">🏠</span><span>Início</span>
+      </button>
+      <button onclick="navegar('monte')" class="nav-btn flex flex-col items-center gap-0.5 text-stone-500">
+        <span class="text-lg">✨</span><span>Monte</span>
+      </button>
+      <button onclick="navegar('carrinho')" class="nav-btn relative flex flex-col items-center gap-0.5 text-stone-500">
+        <span class="text-lg">🛒</span>
+        <span>Carrinho (<span id="badge-carrinho">0</span>)</span>
+      </button>
+      <button onclick="navegar('admin')" class="nav-btn flex flex-col items-center gap-0.5 text-stone-500">
+        <span class="text-lg">👨‍🍳</span><span>Admin</span>
+      </button>
+    </div>
+  </nav>
+
+  <script>
+    let produtos = [];
+    let ingredientes = [];
+    let categoriaAtual = "Todos";
+    let carrinho = JSON.parse(localStorage.getItem("delicia_carrinho") || "[]");
+    let usuarioLogado = JSON.parse(localStorage.getItem("delicia_user") || "null");
+
+    // Estado do Montador
+    const etapas = ["MASSA", "RECHEIO", "COBERTURA", "CONFEITO"];
+    const titulosEtapas = ["Escolha a Massa", "Escolha o Recheio", "Escolha a Cobertura", "Escolha o Confeito"];
+    let etapaAtual = 0;
+    let selecaoCustom = { MASSA: null, RECHEIO: null, COBERTURA: null, CONFEITO: null };
+
+    // Estado Checkout
+    let tipoEntrega = "ENTREGA";
+    let cupomAplicado = null;
+    let pedidoAtualId = null;
+
+    async function init() {
+      atualizarHeaderUsuario();
+      atualizarBadgeCarrinho();
+      // Define data padrão de agendamento para +25 horas
+      const amanha = new Date(Date.now() + 25 * 3600 * 1000);
+      document.getElementById("input-agendamento").value = amanha.toISOString().slice(0, 16);
+
+      const [resProd, resIng] = await Promise.all([
+        fetch("/api/produtos").then(r => r.json()),
+        fetch("/api/ingredientes").then(r => r.json())
+      ]);
+      produtos = resProd;
+      ingredientes = resIng;
+      renderizarVitrine();
+      renderizarMontador();
+    }
+
+    function navegar(tela) {
+      document.querySelectorAll("main > section").forEach(s => s.classList.add("hidden"));
+      document.getElementById(`view-${tela}`).classList.remove("hidden");
+      if (tela === "carrinho") renderizarCarrinho();
+      if (tela === "admin") carregarAdmin();
+    }
+
+    // --- AUTH ---
+    function preencherLogin(email) {
+      document.getElementById("login-email").value = email;
+      document.getElementById("login-senha").value = "12345678";
+    }
+
+    async function fazerLogin() {
+      const email = document.getElementById("login-email").value;
+      const senha = document.getElementById("login-senha").value;
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        const el = document.getElementById("login-erro");
+        el.textContent = err.detail;
+        el.classList.remove("hidden");
+        return;
+      }
+      usuarioLogado = await res.json();
+      localStorage.setItem("delicia_user", JSON.stringify(usuarioLogado));
+      atualizarHeaderUsuario();
+      navegar(usuarioLogado.perfil === "CLIENTE" ? "inicio" : "admin");
+    }
+
+    function atualizarHeaderUsuario() {
+      if (usuarioLogado) {
+        document.getElementById("header-user-name").textContent = usuarioLogado.nome;
+        document.getElementById("header-points").textContent = `🪙 ${usuarioLogado.pontos_fidelidade} pts`;
+        document.getElementById("btn-auth").textContent = "Trocar Conta";
+      }
+    }
+
+    // --- VITRINE ---
+    function selecionarCategoria(cat, btn) {
+      categoriaAtual = cat;
+      document.querySelectorAll(".cat-btn").forEach(b => {
+        b.classList.remove("dark-brown");
+        b.classList.add("bg-white", "border", "border-stone-200");
+      });
+      btn.classList.add("dark-brown");
+      btn.classList.remove("bg-white", "border", "border-stone-200");
+      renderizarVitrine();
+    }
+
+    function filtrarVitrine() { renderizarVitrine(); }
+
+    function renderizarVitrine() {
+      const termo = document.getElementById("busca-input").value.toLowerCase();
+      const filtrados = produtos.filter(p => {
+        const matchCat = categoriaAtual === "Todos" || p.categoria_nome === categoriaAtual;
+        const matchBusca = p.nome.toLowerCase().includes(termo);
+        return matchCat && matchBusca;
+      });
+
+      const grid = document.getElementById("grid-produtos");
+      grid.innerHTML = filtrados.map(p => `
+        <div class="bg-white rounded-2xl p-3 border border-rose-50 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="bg-rose-50/70 rounded-xl h-28 flex items-center justify-center text-4xl mb-2">🧁</div>
+            <span class="text-[10px] bg-stone-100 px-2 py-0.5 rounded-full text-stone-600">${p.categoria_nome}</span>
+            <h4 class="font-semibold text-xs mt-1">${p.nome}</h4>
+            <p class="text-[11px] text-stone-500 line-clamp-2 mt-0.5">${p.descricao}</p>
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-2 border-t border-stone-100">
+            <span class="font-bold text-xs">R$ ${Number(p.preco_base).toFixed(2)}</span>
+            <button onclick='adicionarPronto(${JSON.stringify(p)})' class="w-7 h-7 rounded-full pastel-pink font-bold text-sm flex items-center justify-center hover:opacity-80">+</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function adicionarPronto(prod) {
+      const existente = carrinho.find(i => !i.customizado && i.id_produto === prod.id_produto);
+      if (existente) {
+        existente.quantidade += 1;
+      } else {
+        carrinho.push({
+          customizado: false,
+          id_produto: prod.id_produto,
+          nome: prod.nome,
+          detalhes: prod.categoria_nome,
+          ingredientes_ids: [],
+          quantidade: 1,
+          preco_unitario: Number(prod.preco_base)
+        });
+      }
+      salvarCarrinho();
+    }
+
+    // --- MONTE SEU CUPCAKE ---
+    function renderizarMontador() {
+      const tipo = etapas[etapaAtual];
+      document.getElementById("titulo-etapa").textContent = titulosEtapas[etapaAtual];
+
+      for (let i = 0; i < 4; i++) {
+        const badge = document.getElementById(`step-badge-${i + 1}`);
+        badge.className = i === etapaAtual
+          ? "p-2 rounded-xl dark-brown font-semibold"
+          : "p-2 rounded-xl bg-white border border-stone-200";
+      }
+
+      document.getElementById("btn-voltar-etapa").classList.toggle("hidden", etapaAtual === 0);
+      document.getElementById("btn-avancar-etapa").textContent = etapaAtual === 3 ? "Adicionar ao Carrinho" : "Avançar";
+
+      const lista = ingredientes.filter(i => i.tipo === tipo);
+      const container = document.getElementById("opcoes-ingredientes");
+      container.innerHTML = lista.map(ing => {
+        const selecionado = selecaoCustom[tipo]?.id_ingrediente === ing.id_ingrediente;
+        const disabled = ing.esgotado;
+        return `
+          <button
+            ${disabled ? "disabled" : ""}
+            onclick='selecionarIngrediente(${JSON.stringify(ing)})'
+            class="p-3 rounded-xl border text-left transition ${
+              disabled ? "bg-stone-100 opacity-50 cursor-not-allowed border-stone-200" :
+              selecionado ? "border-2 border-stone-800 bg-rose-50" : "border-stone-200 hover:border-rose-300"
+            }">
+            <div class="flex justify-between items-start">
+              <span class="font-semibold text-xs">${ing.nome}</span>
+              ${disabled ? '<span class="text-[9px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Esgotado</span>' : ""}
+            </div>
+            <p class="text-[11px] text-stone-500 mt-1">+ R$ ${Number(ing.preco_adicional).toFixed(2)}</p>
+          </button>
+        `;
+      }).join("");
+
+      validarRegrasMontador();
+    }
+
+    function selecionarIngrediente(ing) {
+      selecaoCustom[ing.tipo] = ing;
+      renderizarMontador();
+    }
+
+    function validarRegrasMontador() {
+      const escolhidos = Object.values(selecaoCustom).filter(Boolean);
+      const total = 5.0 + escolhidos.reduce((acc, i) => acc + Number(i.preco_adicional), 0);
+      document.getElementById("preco-custom").textContent = `R$ ${total.toFixed(2)}`;
+
+      document.getElementById("preview-resumo").textContent = escolhidos.length
+        ? escolhidos.map(i => i.nome).join(" • ")
+        : "Selecione a massa, recheio, cobertura e confeito";
+
+      // Validação térmica (RN#2)
+      const temQuente = escolhidos.some(i => i.e_quente === 1);
+      const temFruta = escolhidos.some(i => i.e_fruta_fresca === 1);
+      const conflitoTermico = temQuente && temFruta;
+
+      document.getElementById("alerta-termico").classList.toggle("hidden", !conflitoTermico);
+      const btnAvancar = document.getElementById("btn-avancar-etapa");
+      const etapaPreenchida = Boolean(selecaoCustom[etapas[etapaAtual]]);
+      btnAvancar.disabled = conflitoTermico || !etapaPreenchida;
+      btnAvancar.classList.toggle("opacity-40", btnAvancar.disabled);
+    }
+
+    function mudarEtapa(delta) {
+      if (delta === 1 && etapaAtual === 3) {
+        const escolhidos = Object.values(selecaoCustom);
+        const preco = 5.0 + escolhidos.reduce((acc, i) => acc + Number(i.preco_adicional), 0);
+        carrinho.push({
+          customizado: true,
+          id_produto: null,
+          nome: "Cupcake Personalizado",
+          detalhes: escolhidos.map(i => i.nome).join(" + "),
+          ingredientes_ids: escolhidos.map(i => i.id_ingrediente),
+          quantidade: 1,
+          preco_unitario: preco
+        });
+        salvarCarrinho();
+        resetarMontador();
+        navegar("carrinho");
+        return;
+      }
+      etapaAtual = Math.max(0, Math.min(3, etapaAtual + delta));
+      renderizarMontador();
+    }
+
+    function resetarMontador() {
+      etapaAtual = 0;
+      selecaoCustom = { MASSA: null, RECHEIO: null, COBERTURA: null, CONFEITO: null };
+      renderizarMontador();
+    }
+
+    // --- CARRINHO & CHECKOUT ---
+    function salvarCarrinho() {
+      localStorage.setItem("delicia_carrinho", JSON.stringify(carrinho));
+      atualizarBadgeCarrinho();
+    }
+
+    function atualizarBadgeCarrinho() {
+      const qtd = carrinho.reduce((acc, i) => acc + i.quantidade, 0);
+      document.getElementById("badge-carrinho").textContent = qtd;
+    }
+
+    function alterarQtd(idx, delta) {
+      carrinho[idx].quantidade += delta;
+      if (carrinho[idx].quantidade <= 0) carrinho.splice(idx, 1);
+      salvarCarrinho();
+      renderizarCarrinho();
+    }
+
+    function setTipoEntrega(tipo) {
+      tipoEntrega = tipo;
+      document.getElementById("campos-endereco").classList.toggle("hidden", tipo !== "ENTREGA");
+      document.getElementById("btn-tipo-entrega").className = tipo === "ENTREGA"
+        ? "py-2.5 rounded-xl border-2 border-stone-800 bg-rose-50 text-xs font-semibold"
+        : "py-2.5 rounded-xl border border-stone-200 text-xs font-semibold";
+      document.getElementById("btn-tipo-retirada").className = tipo === "RETIRADA"
+        ? "py-2.5 rounded-xl border-2 border-stone-800 bg-rose-50 text-xs font-semibold"
+        : "py-2.5 rounded-xl border border-stone-200 text-xs font-semibold";
+      renderizarCarrinho();
+    }
+
+    async function buscarCep() {
+      const cep = document.getElementById("end-cep").value.replace(/\D/g, "");
+      if (cep.length !== 8) return;
+      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`).then(r => r.json());
+      if (!res.erro) {
+        document.getElementById("end-rua").value = res.logradouro || "";
+        document.getElementById("end-bairro").value = res.bairro || "";
+        document.getElementById("end-cidade").value = res.localidade || "";
+      }
+    }
+
+    async function aplicarCupom() {
+      const codigo = document.getElementById("input-cupom").value;
+      const subtotal = carrinho.reduce((acc, i) => acc + i.preco_unitario * i.quantidade, 0);
+      const msg = document.getElementById("msg-cupom");
+      const res = await fetch("/api/cupons/validar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codigo, subtotal })
+      });
+      const data = await res.json();
+      msg.classList.remove("hidden");
+      if (!res.ok) {
+        cupomAplicado = null;
+        msg.className = "text-xs text-red-600";
+        msg.textContent = data.detail;
+      } else {
+        cupomAplicado = data;
+        msg.className = "text-xs text-emerald-700 font-medium";
+        msg.textContent = `Cupom ${data.codigo} aplicado! Desconto de R$ ${data.desconto.toFixed(2)}`;
+      }
+      renderizarCarrinho();
+    }
+
+    function renderizarCarrinho() {
+      const lista = document.getElementById("lista-carrinho");
+      if (!carrinho.length) {
+        lista.innerHTML = `<p class="text-xs text-stone-500 bg-white p-6 rounded-2xl text-center">Seu carrinho está vazio.</p>`;
+      } else {
+        lista.innerHTML = carrinho.map((item, idx) => `
+          <div class="bg-white p-3.5 rounded-2xl border border-stone-200 flex items-center justify-between">
+            <div>
+              <h4 class="font-semibold text-xs">${item.nome}</h4>
+              <p class="text-[11px] text-stone-500">${item.detalhes}</p>
+              <p class="font-bold text-xs mt-1">R$ ${(item.preco_unitario * item.quantidade).toFixed(2)}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="alterarQtd(${idx}, -1)" class="w-7 h-7 rounded-lg bg-stone-100 font-bold">-</button>
+              <span class="text-xs font-semibold">${item.quantidade}</span>
+              <button onclick="alterarQtd(${idx}, 1)" class="w-7 h-7 rounded-lg bg-stone-100 font-bold">+</button>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      const subtotal = carrinho.reduce((acc, i) => acc + i.preco_unitario * i.quantidade, 0);
+      const frete = tipoEntrega === "ENTREGA" && subtotal > 0 ? 5.0 : 0.0;
+      const desconto = cupomAplicado ? cupomAplicado.desconto : 0.0;
+      const total = Math.max(0, subtotal + frete - desconto);
+
+      document.getElementById("resumo-subtotal").textContent = `R$ ${subtotal.toFixed(2)}`;
+      document.getElementById("resumo-frete").textContent = `R$ ${frete.toFixed(2)}`;
+      document.getElementById("resumo-desconto").textContent = `- R$ ${desconto.toFixed(2)}`;
+      document.getElementById("resumo-total").textContent = `R$ ${total.toFixed(2)}`;
+    }
+
+    async function finalizarPedido() {
+      const erroEl = document.getElementById("erro-checkout");
+      erroEl.classList.add("hidden");
+
+      if (!usuarioLogado) {
+        navegar("login");
+        return;
+      }
+
+      const payload = {
+        id_usuario: usuarioLogado.id_usuario,
+        tipo_entrega: tipoEntrega,
+        cep: document.getElementById("end-cep").value,
+        logradouro: document.getElementById("end-rua").value,
+        numero: document.getElementById("end-numero").value,
+        bairro: document.getElementById("end-bairro").value,
+        cidade: document.getElementById("end-cidade").value,
+        data_agendamento: document.getElementById("input-agendamento").value,
+        codigo_cupom: cupomAplicado ? cupomAplicado.codigo : null,
+        itens: carrinho
+      };
+
+      const res = await fetch("/api/pedidos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        erroEl.textContent = data.detail;
+        erroEl.classList.remove("hidden");
+        return;
+      }
+
+      pedidoAtualId = data.id_pedido;
+      document.getElementById("pix-codigo-pedido").textContent = data.codigo_pedido;
+      document.getElementById("pix-payload").value = data.pix_copia_cola;
+      document.getElementById("box-rastreamento").classList.add("hidden");
+      document.getElementById("btn-simular-pix").classList.remove("hidden");
+
+      carrinho = [];
+      cupomAplicado = null;
+      salvarCarrinho();
+      navegar("pix");
+    }
+
+    async function simularPagamentoPix() {
+      const res = await fetch(`/api/pedidos/${pedidoAtualId}/confirmar-pagamento`, { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById("btn-simular-pix").classList.add("hidden");
+        document.getElementById("box-rastreamento").classList.remove("hidden");
+        document.getElementById("status-pedido-atual").textContent = data.status;
+        // Atualiza lista de ingredientes para refletir baixa de estoque
+        ingredientes = await fetch("/api/ingredientes").then(r => r.json());
+        renderizarMontador();
+      }
+    }
+
+    // --- ADMIN / KANBAN / ESTOQUE ---
+    async function carregarAdmin() {
+      const [pedidos, ings] = await Promise.all([
+        fetch("/api/pedidos").then(r => r.json()),
+        fetch("/api/ingredientes").then(r => r.json())
+      ]);
+
+      const colRec = document.getElementById("kanban-recebido");
+      const colPrep = document.getElementById("kanban-preparo");
+      const colPronto = document.getElementById("kanban-pronto");
+      colRec.innerHTML = ""; colPrep.innerHTML = ""; colPronto.innerHTML = "";
+
+      pedidos.forEach(p => {
+        if (p.status === "AGUARDANDO_PAGAMENTO") return;
+        const itensHtml = p.itens.map(it => {
+          if (it.customizado) {
+            const listaIngs = (it.ingredientes || []).map(x => x.nome).join(", ");
+            return `<li class="text-[11px]">• <b>Cupcake Personalizado</b> (${listaIngs})</li>`;
+          }
+          return `<li class="text-[11px]">• ${it.produto_nome} (x${it.quantidade})</li>`;
+        }).join("");
+
+        let btnProximo = "";
+        if (p.status === "RECEBIDO") {
+          btnProximo = `<button onclick="moverKanban('${p.id_pedido}', 'EM_PREPARO')" class="w-full mt-2 pastel-pink py-1.5 rounded-lg text-[11px] font-semibold">Iniciar Preparo ▶</button>`;
+        } else if (p.status === "EM_PREPARO") {
+          btnProximo = `<button onclick="moverKanban('${p.id_pedido}', 'PRONTO')" class="w-full mt-2 bg-emerald-100 text-emerald-900 py-1.5 rounded-lg text-[11px] font-semibold">Marcar Pronto ✅</button>`;
+        }
+
+        const card = `
+          <div class="p-3 rounded-xl border border-stone-200 bg-stone-50/70">
+            <div class="flex justify-between font-bold text-xs">
+              <span>${p.codigo_pedido}</span>
+              <span>R$ ${Number(p.valor_total).toFixed(2)}</span>
+            </div>
+            <p class="text-[10px] text-stone-500 mb-1">Cliente: ${p.cliente_nome} | ${p.tipo_entrega}</p>
+            <ul class="space-y-0.5 text-stone-700">${itensHtml}</ul>
+            ${btnProximo}
+          </div>
+        `;
+
+        if (p.status === "RECEBIDO") colRec.innerHTML += card;
+        else if (p.status === "EM_PREPARO") colPrep.innerHTML += card;
+        else colPronto.innerHTML += card;
+      });
+
+      document.getElementById("lista-estoque").innerHTML = ings.map(i => {
+        const cor = i.nivel_estoque === "CRITICO" ? "bg-red-100 text-red-800 border-red-200"
+                  : i.nivel_estoque === "ATENCAO" ? "bg-amber-100 text-amber-800 border-amber-200"
+                  : "bg-emerald-50 text-emerald-800 border-emerald-200";
+        return `
+          <div class="p-3 rounded-xl border ${cor} flex justify-between items-center text-xs">
+            <div>
+              <p class="font-semibold">${i.nome}</p>
+              <p class="text-[10px] opacity-80">${i.tipo} • Mínimo: ${i.estoque_minimo}</p>
+            </div>
+            <span class="font-bold">${i.estoque_atual} ${i.unidade_medida}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function moverKanban(idPedido, novoStatus) {
+      await fetch(`/api/pedidos/${idPedido}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: novoStatus })
+      });
+      carregarAdmin();
+    }
+
+    init();
+  </script>
+</body>
+</html>
