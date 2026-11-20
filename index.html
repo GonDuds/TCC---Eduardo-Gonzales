@@ -176,7 +176,7 @@
     <section id="view-pix" class="hidden max-w-md mx-auto bg-white p-6 rounded-3xl border border-rose-100 text-center space-y-4">
       <span class="pastel-pink px-3 py-1 rounded-full text-xs font-bold" id="pix-codigo-pedido">#PED-0000</span>
       <h2 class="text-lg font-bold">Pagamento via PIX</h2>
-      <p class="text-xs text-stone-500">Expira em <span id="pix-timer" class="font-bold text-red-600">14:59</span></p>
+      <p id="pix-timer-wrapper" class="text-xs text-stone-500">Expira em <span id="pix-timer" class="font-bold text-red-600">14:59</span></p>
 
       <!-- QR Code visual simulado -->
       <div class="w-44 h-44 mx-auto bg-stone-900 text-white rounded-2xl flex flex-col items-center justify-center p-3">
@@ -242,7 +242,7 @@
 
   <!-- BOTTOM NAVIGATION BAR -->
   <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-stone-200 z-40">
-    <div class="max-w-4xl mx-auto grid grid-cols-4 py-2 text-center text-xs">
+    <div id="bottom-nav-grid" class="max-w-4xl mx-auto grid grid-cols-4 py-2 text-center text-xs">
       <button onclick="navegar('inicio')" class="nav-btn flex flex-col items-center gap-0.5 font-semibold text-brown">
         <span class="text-lg">🏠</span><span>Início</span>
       </button>
@@ -253,7 +253,7 @@
         <span class="text-lg">🛒</span>
         <span>Carrinho (<span id="badge-carrinho">0</span>)</span>
       </button>
-      <button onclick="navegar('admin')" class="nav-btn flex flex-col items-center gap-0.5 text-stone-500">
+      <button id="nav-btn-admin" onclick="navegar('admin')" class="nav-btn flex flex-col items-center gap-0.5 text-stone-500">
         <span class="text-lg">👨‍🍳</span><span>Admin</span>
       </button>
     </div>
@@ -272,10 +272,31 @@
     let etapaAtual = 0;
     let selecaoCustom = { MASSA: null, RECHEIO: null, COBERTURA: null, CONFEITO: null };
 
-    // Estado Checkout
+    // Estado Checkout & PIX
     let tipoEntrega = "ENTREGA";
     let cupomAplicado = null;
     let pedidoAtualId = null;
+    let pixInterval = null;
+
+    function iniciarTimerPix() {
+      if (pixInterval) clearInterval(pixInterval);
+      let segundos = 15 * 60 - 1;
+      const timerEl = document.getElementById("pix-timer");
+      const wrapperEl = document.getElementById("pix-timer-wrapper");
+      wrapperEl.classList.remove("hidden");
+      timerEl.textContent = "14:59";
+
+      pixInterval = setInterval(() => {
+        const min = String(Math.floor(segundos / 60)).padStart(2, "0");
+        const sec = String(segundos % 60).padStart(2, "0");
+        timerEl.textContent = `${min}:${sec}`;
+        if (segundos <= 0) {
+          clearInterval(pixInterval);
+          timerEl.textContent = "EXPIRADO";
+        }
+        segundos--;
+      }, 1000);
+    }
 
     async function init() {
       atualizarHeaderUsuario();
@@ -295,6 +316,9 @@
     }
 
     function navegar(tela) {
+      if (tela === "admin" && usuarioLogado && usuarioLogado.perfil === "CLIENTE") {
+        return;
+      }
       document.querySelectorAll("main > section").forEach(s => s.classList.add("hidden"));
       document.getElementById(`view-${tela}`).classList.remove("hidden");
       if (tela === "carrinho") renderizarCarrinho();
@@ -329,10 +353,22 @@
     }
 
     function atualizarHeaderUsuario() {
+      const navAdmin = document.getElementById("nav-btn-admin");
+      const navGrid = document.getElementById("bottom-nav-grid");
+
       if (usuarioLogado) {
         document.getElementById("header-user-name").textContent = usuarioLogado.nome;
         document.getElementById("header-points").textContent = `🪙 ${usuarioLogado.pontos_fidelidade} pts`;
         document.getElementById("btn-auth").textContent = "Trocar Conta";
+
+        const isCliente = usuarioLogado.perfil === "CLIENTE";
+        navAdmin.classList.toggle("hidden", isCliente);
+        navGrid.className = isCliente
+          ? "max-w-4xl mx-auto grid grid-cols-3 py-2 text-center text-xs"
+          : "max-w-4xl mx-auto grid grid-cols-4 py-2 text-center text-xs";
+      } else {
+        navAdmin.classList.remove("hidden");
+        navGrid.className = "max-w-4xl mx-auto grid grid-cols-4 py-2 text-center text-xs";
       }
     }
 
@@ -628,12 +664,15 @@
       cupomAplicado = null;
       salvarCarrinho();
       navegar("pix");
+      iniciarTimerPix();
     }
 
     async function simularPagamentoPix() {
       const res = await fetch(`/api/pedidos/${pedidoAtualId}/confirmar-pagamento`, { method: "POST" });
       const data = await res.json();
       if (res.ok) {
+        if (pixInterval) clearInterval(pixInterval);
+        document.getElementById("pix-timer-wrapper").classList.add("hidden");
         document.getElementById("btn-simular-pix").classList.add("hidden");
         document.getElementById("box-rastreamento").classList.remove("hidden");
         document.getElementById("status-pedido-atual").textContent = data.status;
